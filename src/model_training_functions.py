@@ -11,7 +11,7 @@ import pandas as pd
 
 import random
 
-from ligand_clustering_functions import compute_tanimoto
+from src.ligand_clustering_functions import compute_tanimoto
 
 from rdkit.Chem import MolFromSmiles, AllChem
 
