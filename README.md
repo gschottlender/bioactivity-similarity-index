@@ -1,4 +1,4 @@
-# BSI Molecular Similarity – Minimal Reproducible Pipeline
+# BSI Molecular Similarity – Reproducible Pipeline
 
 This repository accompanies the manuscript describing the **Bioactivity Similarity Index (BSI)** models trained to detect functionally similar ligands across protein targets, even when conventional 2‑D Tanimoto similarity is low. The code and notebooks provided here reproduce the core data preparation, dataset assembly, model training, and basic evaluation workflows used in the study. The goal of this repo is **transparency and reproducibility**, not a polished production package.
 
