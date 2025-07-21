@@ -39,7 +39,7 @@ conda activate bsi_env
 python -m ipykernel install --user --name bsi_env --display-name "Python (bsi_env)"
 
 # 4. Launch notebooks
-jupyter lab  # or: jupyter notebook
+jupyter notebook
 ```
 
 ---
