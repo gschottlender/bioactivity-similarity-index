@@ -94,7 +94,7 @@ Pair tables minimally require columns: `prot`, `l1`, `l2`, `Tanimoto`, `y`.
 
 ## Ligand Diversity Reduction & Decoy Generation
 
-Implemented in \`\`:
+Implemented in src/ligand_clustering_functions.py:
 
 - DUD‑E‑style physicochemical filtering relative to a reference ligand.
 - Bemis–Murcko scaffold clustering (select one representative scaffold).
@@ -108,7 +108,7 @@ Use `cluster_ligands()` to apply Bemis–Murcko → Butina → K‑means sequent
 
 ## Model Architecture & Training
 
-Implemented in \`\`:
+Implemented in src/model_training_functions.py:
 
 - `NeuralNetworkModel` – shallow fully connected network with configurable hidden layers and dropout.
 - Input dimensionality inferred from fingerprint length.
@@ -126,7 +126,7 @@ Large datasets are split into manageable CSV blocks (see `shuffle_and_save_chunk
 
 ## Running the Notebooks
 
-### 1. \`\`
+### 1_data_obtaining.ipynb
 
 - Load raw activity data (ChEMBL or other sources).
 - Normalize protein & ligand IDs.
@@ -134,7 +134,7 @@ Large datasets are split into manageable CSV blocks (see `shuffle_and_save_chunk
 - Clip range, derive binary activity labels.
 - Export cleaned tables.
 
-### 2. \`\`
+### 2_dataset_assembly.ipynb
 
 - Load cleaned data.
 - Generate SMILES fingerprints.
@@ -143,7 +143,7 @@ Large datasets are split into manageable CSV blocks (see `shuffle_and_save_chunk
 - Apply Tanimoto < 0.4 filter.
 - Chunk and write training/test CSVs by protein group.
 
-### 3. \`\`
+### 3_train_models.ipynb
 
 - Load chunked datasets & fingerprint db.
 - Train BSI group‑specific models and the global BSI‑Large.
