@@ -1,0 +1,45 @@
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# System/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environments and environment files
+.env
+*.env
+.venv/
+*.venv
+
+# Data and model files (DO NOT version)
+data/
+train_datasets/
+test_datasets/
+models/
+
+# Large/temporary files
+*.db
+*.sqlite
+*.tar.gz
+*.zip
+*.gz
+*.pkl
+*.joblib
+*.h5
+*.ckpt
+*.log
+*.out
+*.tmp
+
+# Always track these base files
+!*.py
+!*.ipynb
+!*.md
+!environment.yml
+!LICENSE
