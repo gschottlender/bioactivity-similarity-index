@@ -1,6 +1,6 @@
 # BSI Molecular Similarity
 
-This repository accompanies the manuscript describing the **Bioactivity Similarity Index (BSI)** models trained to detect functionally similar ligands across protein targets, even when conventional 2‑D Tanimoto similarity is low. The code and notebooks provided here reproduce the core data preparation, dataset assembly, model training, and basic evaluation workflows used in the study.
+This repository accompanies the manuscript describing the **Bioactivity Similarity Index (BSI)** models trained to detect functionally similar ligands across protein targets when conventional Tanimoto similarity is low. The code and notebooks provided here reproduce the core data preparation, dataset assembly, model training, and basic evaluation workflows used in the study.
 
 ---
 
