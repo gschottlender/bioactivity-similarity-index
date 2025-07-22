@@ -56,8 +56,8 @@ The file must contain the standard ChEMBL schema (`molecule_dictionary`, `activi
 
 ```bash
 # Example for ChEMBL 33
-authors$ wget ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBL33/chembl_33_sqlite.tar.gz
-authors$ tar -xzf chembl_33_sqlite.tar.gz -C data/
+wget ftp://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBL33/chembl_33_sqlite.tar.gz
+tar -xzf chembl_33_sqlite.tar.gz -C data/
 ```
 
 > **Tip:** Any recent ChEMBL release (≥ v29) works, but the manuscript was produced with **ChEMBL 33** (models) and **ChEMBL 35** (held‑out validation).
