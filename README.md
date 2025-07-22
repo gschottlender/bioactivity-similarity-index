@@ -155,7 +155,7 @@ Large datasets are split into manageable CSV blocks (see `shuffle_and_save_chunk
 
 ## Environment & Reproducibility
 
-The included \`\` pins the versions actually used for the study (Python 3.9, RDKit 2021.09.1, PyTorch 2.5.1 CUDA 12.4, etc.). Create the environment with:
+The included environment.yml pins the versions actually used for the study (Python 3.9, RDKit 2021.09.1, PyTorch 2.5.1 CUDA 12.4, etc.). Create the environment with:
 
 ```bash
 conda env create -f environment.yml
