@@ -88,7 +88,7 @@ def build_prot_ligs_table(chembl_sqlite: Path,
     Note: we also fetch `smiles` in the same query to avoid a second DB hit.
     The returned DataFrame therefore includes a `smiles` column, which we
     exclude when writing `prot_ligs_db.csv`, but reuse to emit `smiles.csv` and
-    downstream artifacts.
+    downstream databases.
     """
     rows = sql_fetch(QUERY_PROT_LIGS, chembl_sqlite)
     df = pd.DataFrame(rows, columns=['lig','prot','pchembl','comment','pfam','smiles'])
@@ -109,7 +109,7 @@ def build_prot_ligs_table(chembl_sqlite: Path,
 
 
 
-# --------------------------- Optional artifacts ---------------------------
+# --------------------------- Other databases ---------------------------
 
 def compute_properties(smiles_map: Dict[str,str]) -> pd.DataFrame:
     rows: list[dict] = []
@@ -193,7 +193,7 @@ def parse_args() -> argparse.Namespace:
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description=(
-    'Build database of ligands and targets from ChEMBL with corresponding activity, plus SMILES, fingerprints (ECFP4 .pkl), Bemis–Murcko scaffolds, and decoys. All artifacts are produced.'
+    'Build database of ligands and targets from ChEMBL with corresponding activity, plus SMILES, fingerprints (ECFP4 .pkl), Bemis–Murcko scaffolds, and decoys. All databases are produced.'
     ))
 
 
@@ -266,7 +266,7 @@ def main() -> int:
         pickle.dump(decoys, f)
     log.info('Wrote decoys.pkl → %s', out / 'decoys.pkl')
 
-    log.info('All artifacts generated. ✅')
+    log.info('All databases generated. ✅')
     return 0
 
 if __name__ == "__main__":
