@@ -476,6 +476,21 @@ def main() -> int:
     log.info("Build+train pipeline completed successfully. ✅")
     return 0
 
+    # 7) Save essential PyTorch parameters (same name and directory)
+
+    model_params = {
+        "hidden_layers": parse_hidden_layers(args.hidden_layers),
+        "dropout": args.dropout,
+        "random_seed": args.random_seed
+    }
+
+    # Same directory and basename as the model .pth file
+    params_path = args.model_out.with_suffix(".params.json")
+
+    with open(params_path, "w") as f:
+        json.dump(model_params, f, indent=4)
+
+    log.info("Model parameters saved → %s", params_path)
 
 if __name__ == "__main__":
     main()
