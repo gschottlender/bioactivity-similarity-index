@@ -474,7 +474,6 @@ def main() -> int:
     log.info("Model saved → %s", args.model_out)
 
     log.info("Build+train pipeline completed successfully. ✅")
-    return 0
 
     # 7) Save essential PyTorch parameters (same name and directory)
 
@@ -491,6 +490,8 @@ def main() -> int:
         json.dump(model_params, f, indent=4)
 
     log.info("Model parameters saved → %s", params_path)
+    
+    return 0
 
 if __name__ == "__main__":
     main()
