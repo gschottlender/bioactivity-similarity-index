@@ -13,21 +13,13 @@ This repo includes three command-line scripts and companion notebooks that mirro
 ## Table of Contents
 - [Project Goals](#project-goals)
 - [Repository Structure](#repository-structure)
-- [Quick Start](#quick-start)
-- [Installation](#installation)
+- [Installation](#Installation)
+- [Examples](#examples)
 - [Data & Outputs](#data--outputs)
-- [Workflow](#workflow)
-  - [1) Obtain & label ChEMBL data](#1-obtain--label-chembl-data)
-  - [2) Assemble pairwise datasets & train](#2-assemble-pairwise-datasets--train)
-  - [3) Evaluate new SMILES pairs](#3-evaluate-new-smiles-pairs)
+- [Description and Usage](#Description-and-Usage)
 - [Configuration & Hyperparameters](#configuration--hyperparameters)
 - [Notebooks](#notebooks)
-- [Examples](#examples)
-- [Troubleshooting](#troubleshooting)
 - [Dependencies](#dependencies)
-- [Contributing](#contributing)
-- [License](#license)
-- [Citation](#citation)
 
 ---
 
@@ -53,14 +45,17 @@ notebooks/
 src/
 │   ├── ligand_clustering_functions.py  # Ligand filtering, scaffolds, clustering, decoys, Tanimoto
 │   └── model_training_functions.py     # Fingerprint conversion, NN model, training, fine‑tuning, inference
-trained_models 
-    ├── BSI_Large.pth         # Pre-trained BSI-Large model, usable for predictions and fine-tuning
-    └── BSI_Large.params.json # BSI-Large model parameters, loadable for predictions and fine-tuning
+trained_models/ 
+│   ├── BSI_Large.pth         # Pre-trained BSI-Large model, usable for predictions and fine-tuning
+│   └── BSI_Large.params.json # BSI-Large model parameters, loadable for predictions and fine-tuning
+example_inputs
+    ├── fine_tuning_data.csv  # Example csv file that details the format for fine-tuning data
+    └── test_data.csv         # Example csv file that details the format for testing data
 ```
 
 ---
 
-## Instalation
+## Installation
 
 ```bash
 # 1. Clone
@@ -74,7 +69,7 @@ conda activate bsi_env
 python -m ipykernel install --user --name bsi_env --display-name "Python (bsi_env)"
 ```
 
-## Quick Examples
+## Examples
 
 ```bash
 # Extract data from ChEMBL Databases (optional, only for training models from scratch)
@@ -89,41 +84,27 @@ python train_BSI_model.py \
   --model-out out/models/bsi_large.pth \
   --model-type BSI_Large_MPG
 
-# Fine-tune model on new data
+# Train on a single PFAM group (requires the outputs from process_chembl_db.py)
+python train_BSI_model.py \
+  --data-dir out/db_data \
+  --train-dir out/group_train \
+  --model-out out/models/PF00069_model.pth \
+  --model-type Group --pfam-id PF00069
+
+# Fine-tune model on new data (example of fine-tuning data format provided in example_inputs/fine_tuning_data.csv)
 python fine-tune_model.py \
   --input_csv data/fine-tuning_data.csv \
   --model_path /trained_models/BSI_Large.pth 
   --train_dir out/train_data_ft \
   --model_out out/models_ft/ft_model.pth
 
-# Score new SMILES pairs with trained models
+# Score new SMILES pairs with trained models (can be used also with fine-tuned models, example of test data format provided in example_inputs/test_data.csv)
 python evaluate_bsi_pairs.py \
   --model-path trained_models/BSI_large.pth \
   --input-csv data/pairs_to_score.csv \
-  --output-csv out/predictions.csv -vv
+  --output-csv out/predictions.csv
+
 ```
-
----
-
-## Installation
-**Core dependencies**
-- Python ≥ 3.10
-- RDKit (with minimal features for ECFP4, scaffolds, descriptors)
-- NumPy, pandas
-- PyTorch (CPU is fine; GPU optional)
-- scikit-learn (KMeans)
-- SQLite (to read the ChEMBL dump)
-
-If you don’t have a `requirements.txt`, start with:
-```txt
-numpy
-pandas
-rdkit-pypi
-torch
-scikit-learn
-```
-
-> RDKit wheels (`rdkit-pypi`) are convenient on many platforms; on others you may prefer conda (`conda install -c conda-forge rdkit`).
 
 ---
 
@@ -132,7 +113,7 @@ scikit-learn
 - **ChEMBL SQLite**: `chembl_XX.db` (download from EMBL-EBI).
 
 ### Key outputs by stage
-**Step 1 (database processing)**
+**database processing**
 - `prot_ligs_db.csv` – ligand–protein activity table with labels (`lig, prot, pchembl, comment, pfam, activity`)
 - `smiles.csv` – unique `(ligand_id, smiles)`
 - `props.csv` – basic physchem properties per ligand
@@ -140,21 +121,21 @@ scikit-learn
 - `scaffolds.pkl` – Bemis–Murcko scaffold per ligand
 - `decoys.pkl` – per-active lists of decoys (property-matched, similarity-screened)
 
-**Step 2 (pair assembly & training)**
+**pair assembly & training**
 - **Chunked CSVs** under `--train-dir`:
   - `chunk_*.csv` with columns: `prot, l1, l2, Tanimoto, y`
 - Model weights:
   - `bsi_large.pth`
   - `bsi_large.pth.params.json` (minimal architecture params saved alongside the model)
 
-**Step 3 (inference)**
+**inference**
 - Scored CSV with predictions appended to your pairs.
 
 ---
 
-## Workflow
+## Description and Usage
 
-### 1) Obtain & label ChEMBL data
+### Obtain & label ChEMBL data
 Run:
 ```bash
 python process_chembl_db.py \
@@ -174,7 +155,7 @@ Flags of note:
 
 ---
 
-### 2) Assemble pairwise datasets & train
+### Assemble pairwise datasets & train
 Run:
 ```bash
 python train_BSI_model.py \
@@ -203,14 +184,57 @@ What it does:
 
 ---
 
-### 3) Evaluate new SMILES pairs
-Prepare a CSV with columns:
+### Fine-tune a pre-trained model
+Requires a fine_tuning_data.csv file with columns 'l1','l2','y'. Where 'l1' and 'l2' correspond to the pair of compounds in SMILES format, and 'y' is the similarity label (binary, 1 or 0): 
+
 ```csv
-l1,l2
-CCO,CN(C)C(=O)...
-CC(C)N...,c1ccccc1...
+l1,l2,y
+CCO,CN(C)C(=O),1
+CC(C)N,c1ccccc1,0
 ...
 ```
+Example of the required format provided in example_inputs/fine_tuning_data.csv
+
+
+
+Run:
+```bash
+python fine-tune_model.py \
+  --input_csv path/to/fine_tuning_data.csv \
+  --model_path out/models/bsi_large.pth \
+  --model_out out/models/bsi_large_finetuned.pth \
+  --train_dir out/train_chunks_finetune \
+  --chunk_prefix chunk --num_chunks 10 \
+  --freeze_until_layer 1 \
+  --n_epochs 5 --dropout_prob 0.50 \
+  --lr 1e-5 --batch_size 32 \
+  --random_seed 42 --verbose
+```
+
+What it does:
+- **Loads labeled ligand–ligand pairs** from `--input_csv` and validates required columns `l1`, `l2`, `y`.
+- **Computes ECFP4 fingerprints (256‑bit)** for every unique SMILES appearing in `l1` or `l2` (cached and reused across chunks).
+- **Shuffles and splits the pairs into chunked CSVs** under `--train_dir` (bounded‑memory training), with files prefixed by `--chunk_prefix`.
+- **Loads base model hyperparameters** (hidden layers & dropout) from `--model_path` and **reconstructs the network** accordingly; then **loads pre‑trained weights**.
+- **Fine‑tunes the model** on the chunked data, with options to freeze initial layers (`--freeze_until_layer`), set epochs, dropout during training, learning rate, and batch size.
+- **Saves the fine‑tuned weights to `--model_out`** and writes a small JSON next to it (`.params.json`) capturing essential training parameters (hidden layers, dropout, seed).
+
+Notes:
+- Fingerprints are computed once per unique SMILES to avoid recomputation across chunks.
+- The script preserves the base network architecture (hidden layers) from the pre‑trained model; training‑time options are controlled via CLI.
+
+
+---
+
+### Evaluate new SMILES pairs
+Requires a CSV with columns 'l1', and 'l2', both in SMILES format:
+```csv
+l1,l2
+CCO,CN(C)C(=O)
+CC(C)N,c1ccccc1
+...
+```
+Example of the required format provided in example_inputs/test_data.csv
 
 Run:
 ```bash
@@ -243,48 +267,7 @@ What it does:
 - **2_dataset_assembly.ipynb** – demonstrates ligand pruning, pair generation, and chunking.
 - **3_train_models.ipynb** – focuses on training from chunks, monitoring loss/metrics, and saving the model.
 
-> The scripts are the source of truth for automation; the notebooks are great for exploration and sanity checks.
-
----
-
-## Examples
-
-### Minimal end-to-end (default settings)
-```bash
-# Step 1
-python process_chembl_db.py --chembl-sqlite chembl_34.db --out-dir out/db_data -v
-# Step 2
-python train_BSI_model.py --data-dir out/db_data --train-dir out/train --model-out out/models/bsi.pth -v
-# Step 3
-python evaluate_bsi_pairs.py --model-path out/models/bsi.pth \
-  --input-csv data/pairs.csv --output-csv out/preds.csv -v
-```
-
-### Train on a single PFAM group
-```bash
-python train_BSI_model.py \
-  --data-dir out/db_data \
-  --train-dir out/group_train \
-  --model-out out/models/bsi_group.pth \
-  --model-type Group --pfam-id PF00069 -vv
-```
-
-### Use custom architecture at inference
-```bash
-python evaluate_bsi_pairs.py \
-  --model-path out/models/bsi_large.pth \
-  --input-csv data/pairs.csv \
-  --output-csv out/preds.csv \
-  --hidden-layers "[768,256,64]" --dropout 0.25 -vv
-```
-
----
-
-## Troubleshooting
-- **RDKit import errors**: prefer conda to install RDKit; otherwise ensure `rdkit-pypi` matches your Python version.
-- **No training pairs generated**: lower `--min-positives`, relax pruning (increase `--kmeans-representatives`), or adjust activity thresholds in Step 1.
-- **Empty output after evaluation**: you likely filtered all pairs by Tanimoto; rerun with `--no-tanimoto-filter` or raise `--tanimoto-threshold`.
-- **Missing `.params.json` at inference**: make sure the params JSON is saved next to your `.pth` (same basename). If absent, supply `--hidden-layers` and `--dropout` explicitly.
+> The scripts are the source of truth for automation; the notebooks are great for exploration, workflow modifications and sanity checks.
 
 ---
 
