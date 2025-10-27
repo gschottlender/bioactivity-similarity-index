@@ -82,6 +82,7 @@ def load_model_params_from_json(model_path: Path) -> dict:
     Load minimal PyTorch model params from <model>.params.json
     Expected keys: hidden_layers (list[int]), dropout (float).
     """
+    model_path = Path(model_path)
     params_path = model_path.with_suffix(".params.json")
     if not params_path.exists():
         raise SystemExit(f"Missing params JSON: {params_path} (expected next to {model_path})")
