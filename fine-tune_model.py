@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument("--train_dir", type=str, required=True, help='Directory to save training provisional chunked data')
     parser.add_argument("--chunk_prefix", type=str, default="chunk")
     parser.add_argument("--num_chunks", type=int, default=5, help="Number of chunks to divide dataset after converting to features vector (default: 5)")
+    ap.add_argument("--fp-bits", type=int, default=256, help="ECFP4 bit-length for compound encoding (default: 256)")
     parser.add_argument("--random_seed", type=int, default=42)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--freeze_until_layer", type=int, default=1,
@@ -52,7 +53,7 @@ def main() -> int:
             raise SystemExit(f"Input CSV must contain column '{col}'")
 
     tot_ligs = pd.unique(pairs[['l1', 'l2']].values.ravel())
-    db_ligs = {s: ecfp4_from_smiles(s,n_bits=256) for s in tot_ligs}
+    db_ligs = {s: ecfp4_from_smiles(s,n_bits=args.fp_bits) for s in tot_ligs}
 
     desired_chunks = args.num_chunks if args.num_chunks and args.num_chunks > 0 else 30
     num_chunks = min(desired_chunks, len(pairs))
@@ -72,7 +73,7 @@ def main() -> int:
     log.info(f"Model params → hidden_layers={hidden_layers} | dropout={dropout:.3f}")
 
     # 3) Load model weights
-    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=256, output_size=1)
+    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=args.fp_bits, output_size=1)
     state = torch.load(args.model_path, map_location="cpu")
     model.load_state_dict(state)
 
