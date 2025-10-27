@@ -120,7 +120,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--tanimoto-threshold", type=float, default=0.40,
                     help="Filter out pairs with Tanimoto >= threshold (default: 0.40)")
     ap.add_argument("--no-tanimoto-filter", action="store_true", help="Do not filter pairs by Tanimoto")
-    ap.add_argument("--fp-bits", type=int, default=256, help="ECFP4 bit-length used for Tanimoto (default: 256)")
+    ap.add_argument("--fp-bits", type=int, default=256, help="ECFP4 bit-length used for compound encoding (default: 256)")
 
     # Logging
     ap.add_argument("-v", "--verbose", action="count", default=1, help="Verbosity (-v, -vv)")
@@ -169,13 +169,13 @@ def main() -> int:
     log.info("Model params → hidden_layers=%s | dropout=%.3f", hidden_layers, dropout)
 
     # 4) Construct model and load weights
-    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=256, output_size=1)
+    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=args.fp_bits, output_size=1)
     state = torch.load(args.model_path, map_location="cpu")
     model.load_state_dict(state)
     model.eval()
 
     # 5) Score pairs via project helper (ensures same preprocessing as training)
-    scored = prepare_and_evaluate_pairs(df[["l1", "l2"]].copy(), model)
+    scored = prepare_and_evaluate_pairs(df[["l1", "l2"]].copy(), model, fp_size=args.fp_bits)
 
     # 6) Save predictions
     if {"l1", "l2"}.issubset(scored.columns):
