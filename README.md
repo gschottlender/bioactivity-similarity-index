@@ -6,7 +6,7 @@ A reproducible pipeline to:
 3) assemble pairwise training sets (S/N pairs with Tanimoto filtering), train a neural model, and  
 4) **evaluate** new compound pairs with the trained model.
 
-This repo includes three command-line scripts and companion notebooks that mirror the workflow end-to-end.
+This repo includes three command-line scripts and companion notebooks that mirror the workflow end-to-end. Also includes a pre-trained BSI-Large model, available to make predictions and fine-tuning.
 
 ---
 
@@ -45,6 +45,7 @@ while filtering by Tanimoto to avoid trivial similarity.
 ├── process_chembl_db.py        # Build labeled tables + cheminformatics artifacts from ChEMBL (SQLite)
 ├── train_BSI_model.py          # Streamed pair generation + chunked CSVs + model training
 ├── evaluate_bsi_pairs.py       # Evaluate new compound pairs (from SMILES) with a trained model (.pth + .params.json)
+├── fine-tune_model.py          # Fine-tune pre-trained model on new data
 notebooks/
 │   ├── 1_data_obtaining.ipynb      # Notebook version for interactive step-by-step data extraction from chembl
 │   ├── 2_dataset_assembly.ipynb    # Notebook version of interactive step-by-step dataset active and inactive pairs assembly
@@ -52,11 +53,15 @@ notebooks/
 src/
 │   ├── ligand_clustering_functions.py  # Ligand filtering, scaffolds, clustering, decoys, Tanimoto
 │   └── model_training_functions.py     # Fingerprint conversion, NN model, training, fine‑tuning, inference
+trained_models 
+    ├── BSI_Large.pth         # Pre-trained BSI-Large model, usable for predictions and fine-tuning
+    └── BSI_Large.params.json # BSI-Large model parameters, loadable for predictions and fine-tuning
 ```
 
 ---
 
-## Quick Start
+## Instalation
+
 ```bash
 # 1. Clone
 git clone git@github.com:gschottlender/bioactivity-similarity-index.git && cd bioactivity-similarity-index
@@ -67,27 +72,33 @@ conda activate bsi_env
 
 # 3. Register Jupyter kernel (once)
 python -m ipykernel install --user --name bsi_env --display-name "Python (bsi_env)"
+```
 
-# 4. Extract data from ChEMBL Databases
+## Quick Examples
+
+```bash
+# Extract data from ChEMBL Databases (optional, only for training models from scratch)
 python process_chembl_db.py \
   --chembl-sqlite /path/to/chembl_XX.db \
   --out-dir out/db_data -vv
 
-# 5. Build training pairs (streamed to CSV chunks) + train model
+# Build training pairs (streamed to CSV chunks) + train model (optional, only for training models from scratch)
 python train_BSI_model.py \
   --data-dir out/db_data \
-  --train-dir out/train_datasets \
+  --train-dir out/train_data \
   --model-out out/models/bsi_large.pth \
-  --model-type BSI_Large_MPG \
-  --tanimoto-threshold 0.40 --butina-threshold 0.40 \
-  --kmeans-representatives 100 --min-positives 25 \
-  --n-decoys-per-lig 25 --decoys-proportion 2.0 \
-  --num-chunks 30 --chunk-prefix chunk \
-  --hidden-layers "512,256,128,64" --dropout 0.30 --epochs 10 -vv
+  --model-type BSI_Large_MPG
 
-# 6. Score new SMILES pairs with trained models
+# Fine-tune model on new data
+python fine-tune_model.py \
+  --input_csv data/fine-tuning_data.csv \
+  --model_path /trained_models/BSI_Large.pth 
+  --train_dir out/train_data_ft \
+  --model_out out/models_ft/ft_model.pth
+
+# Score new SMILES pairs with trained models
 python evaluate_bsi_pairs.py \
-  --model-path out/models/bsi_large.pth \
+  --model-path trained_models/BSI_large.pth \
   --input-csv data/pairs_to_score.csv \
   --output-csv out/predictions.csv -vv
 ```
