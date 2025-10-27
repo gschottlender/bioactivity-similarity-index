@@ -18,6 +18,7 @@ This repo includes three command-line scripts and companion notebooks that mirro
 - [Data & Outputs](#data--outputs)
 - [Description and Usage](#Description-and-Usage)
 - [Configuration & Hyperparameters](#configuration--hyperparameters)
+- [End-to-end example](#End-to-end-Workflow-Example)
 - [Notebooks](#notebooks)
 - [Dependencies](#dependencies)
 
@@ -75,7 +76,7 @@ python -m ipykernel install --user --name bsi_env --display-name "Python (bsi_en
 # Extract data from ChEMBL Databases (optional, only for training models from scratch)
 python process_chembl_db.py \
   --chembl-sqlite /path/to/chembl_XX.db \
-  --out-dir out/db_data -vv
+  --out-dir out/db_data
 
 # Build training pairs (streamed to CSV chunks) + train model (optional, only for training models from scratch)
 python train_BSI_model.py \
@@ -140,7 +141,7 @@ Run:
 ```bash
 python process_chembl_db.py \
   --chembl-sqlite /path/to/chembl_XX.db \
-  --out-dir out/db_data -vv
+  --out-dir out/db_data
 ```
 What it does:
 - Single SQL joins fetch **ligand_id**, **UniProt**, **pChEMBL**, **PFAM**, **SMILES**.
@@ -167,7 +168,7 @@ python train_BSI_model.py \
   --kmeans-representatives 100 --min-positives 25 \
   --n-decoys-per-lig 25 --decoys-proportion 2.0 \
   --num-chunks 30 --chunk-prefix chunk \
-  --hidden-layers "512,256,128,64" --dropout 0.30 --epochs 10 -vv
+  --hidden-layers "512,256,128,64" --dropout 0.30 --epochs 10
 ```
 
 What it does:
@@ -208,7 +209,7 @@ python fine-tune_model.py \
   --freeze_until_layer 1 \
   --n_epochs 5 --dropout_prob 0.50 \
   --lr 1e-5 --batch_size 32 \
-  --random_seed 42 --verbose
+  --fp-bits 256 --random_seed 42
 ```
 
 What it does:
@@ -243,7 +244,7 @@ python evaluate_bsi_pairs.py \
   --input-csv data/pairs_to_score.csv \
   --output-csv out/predictions.csv \
   --tanimoto-threshold 0.40 \
-  --fp-bits 256 -vv
+  --fp-bits 256
 ```
 
 What it does:
@@ -259,6 +260,69 @@ What it does:
 - **Tanimoto threshold**: default **0.40** (both training pair generation and evaluation).
 - **Clustering**: Butina `0.40`, KMeans representatives `100` by default; Bemis–Murcko toggled **on** in the pruning chain.
 - **Model**: MLP with user-defined `--hidden-layers`, `--dropout`; training for `--epochs` epochs.
+
+---
+
+## End-to-end Workflow Example 
+### Training and fine-tuning a BSI-Large using higher dimension fingerprints (fp-bits = 512)
+We fine-tune on example data involving S pairs of compounds represented by two drug-like compounds, and N pairs corresponding to one drug-like compound and another non drug-like.
+We predict with the fine-tuned model on related data from drug-like and non-drug like compounds.
+
+#### Step 1: Download and process ChEMBL Database
+
+```bash
+python process_chembl_db.py \
+  --download_chembl \
+  --out-dir out/db_data \
+  --fp-bits 512
+```
+
+#### Step 2: Train the model
+
+```bash
+python train_BSI_model.py \
+  --data-dir out/db_data \
+  --train-dir out/train_data \
+  --model-out out/models/bsi_large.pth \
+  --hidden-layers "512,256,128,64" \
+  --model-type BSI_Large_MPG \
+```
+
+#### Step 3: Fine-tune the model
+
+```bash
+python fine-tune_model.py \
+  --input_csv /example_inputs/fine_tuning_data.csv \
+  --model_path out/models/bsi_large.pth \
+  --model_out out/models/bsi_large_finetuned.pth \
+  --train_dir out/train_data_ft \
+  --freeze_until_layer 1 \
+  --n_epochs 5 --fp-bits 256 
+```
+
+#### Step 4: Predictions on example data
+
+Predict using BSI-Large model
+
+```bash
+python evaluate_bsi_pairs.py \
+  --model-path out/models/bsi_large.pth \
+  --input-csv example_inputs/test_data.csv \
+  --output-csv out/test_data_preds.csv \
+  --tanimoto-threshold 0.40 \
+  --fp-bits 256
+```
+
+Predict using fine-tuned BSI-Large model
+
+```bash
+python evaluate_bsi_pairs.py \
+  --model-path out/models/bsi_large_finetuned.pth \
+  --input-csv data/pairs_to_score.csv \
+  --output-csv out/test_data_preds_ft.csv \
+  --tanimoto-threshold 0.40 \
+  --fp-bits 256
+```
 
 ---
 
