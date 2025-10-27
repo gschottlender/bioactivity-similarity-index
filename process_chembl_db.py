@@ -198,14 +198,19 @@ def parse_args() -> argparse.Namespace:
 
 
     # Accept both dashed and underscored variants
-    ap.add_argument('--chembl-sqlite','--chembl_sqlite', required=True, type=Path, help='Path to chembl_XX.db (SQLite)')
     ap.add_argument('--out-dir','--out_dir', required=True, type=Path, help='Output directory')
 
+    group = ap.add_mutually_exclusive_group(required=True)
+    group.add_argument("--download_chembl", action="store_true", help="Download ChEMBL database automatically (from EBI FTP)")
+    group.add_argument("--chembl-sqlite", "--chembl_sqlite", type=Path, help="Path to local chembl_XX.db (SQLite)")
 
     # Thresholds/sizes
     ap.add_argument('--positive-threshold', type=float, default=6.5, help='pChEMBL > t => active (default 6.5)')
     ap.add_argument('--negative-threshold', type=float, default=4.5, help='pChEMBL < t => inactive (default 4.5)')
     ap.add_argument('--fp-bits', type=int, default=256, help='ECFP4 bit-length (default 256)')
+    
+    ap.add_argument('--chembl_version',type=int, default=35)
+
 
 
     # Logging
@@ -224,8 +229,26 @@ def main() -> int:
     out = args.out_dir
     out.mkdir(parents=True, exist_ok=True)
 
+    if args.download_chembl:
+        # Downloads chembl with the specified version
+
+        chembl_file = out / f"chembl_{args.chembl_version}_sqlite.tar.gz"
+        
+        if chembl_file.exists():
+            chembl_file.unlink()
+        
+        os.system(
+            f"wget -P {out} "
+            f"https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/"
+            f"chembl_{args.chembl_version}/chembl_{args.chembl_version}_sqlite.tar.gz"
+        )
+        os.system(f"tar -xvzf {chembl_file} -C {out}")
+        chembl_db_path = next(out.rglob(f"chembl_{args.chembl_version}.db"))
+    else:
+        chembl_db_path = args.chembl_sqlite
+
     # 1) Build prot_ligs db (with activity) from a single SQL query
-    prot_ligs = build_prot_ligs_table(args.chembl_sqlite, args.positive_threshold, args.negative_threshold)
+    prot_ligs = build_prot_ligs_table(chembl_db_path, args.positive_threshold, args.negative_threshold)
 
     # 2) Export prot_ligs_db.csv (without smiles) and smiles.csv (from the same result)
     prot_cols = ['lig','prot','pchembl','comment','pfam','activity']
