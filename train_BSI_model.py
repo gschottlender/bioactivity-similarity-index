@@ -47,22 +47,22 @@ Notes
 from __future__ import annotations
 
 import argparse
+import gc
 import itertools
 import json
 import logging
 import os
 import pickle
+import random
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+
 import numpy as np
 import pandas as pd
-from rdkit.Chem import AllChem
-from rdkit.Chem import DataStructs
-from rdkit.DataStructs.cDataStructs import CreateFromBitString
-import gc
 import torch
-import random
-# Project helpers
+from rdkit.Chem import AllChem, DataStructs
+from rdkit.DataStructs.cDataStructs import CreateFromBitString
+
 from src.ligand_clustering_functions import (
     bemis_murcko_clustering,
     butina_clustering,
