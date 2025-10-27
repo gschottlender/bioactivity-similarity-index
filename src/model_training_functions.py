@@ -1,19 +1,19 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import TensorDataset, DataLoader
-from sklearn.model_selection import train_test_split
+import gc
+import logging
+import os
+import random
 
 import numpy as np
-import gc
-
-import os
 import pandas as pd
-
-import random
+import torch
+import torch.nn as nn
+from rdkit.Chem import AllChem, MolFromSmiles
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader, TensorDataset
 
 from src.ligand_clustering_functions import compute_tanimoto
 
-from rdkit.Chem import MolFromSmiles, AllChem
+log = logging.getLogger(__name__)
 
 def convert_compound_pairs(pairs, ligs_fps_db, sim='y'):
     """
@@ -187,7 +187,7 @@ def train_model_on_chunks(
 
     # 2) Training loop
     for epoch in range(n_epochs):
-        print(f"\n=== Epoch {epoch+1}/{n_epochs} ===")
+        log.info(f"\n=== Epoch {epoch+1}/{n_epochs} ===")
         
         epoch_running_loss = 0.0
         epoch_size = 0  # For average loss over the whole epoch
@@ -252,7 +252,7 @@ def train_model_on_chunks(
 
             val_loss_chunk = val_loss_chunk / val_samples_chunk if val_samples_chunk > 0 else 0.0
 
-            print(f" - {filename} | Train Loss: {chunk_loss:.4f}, Val Loss: {val_loss_chunk:.4f}")
+            log.info(f" - {filename} | Train Loss: {chunk_loss:.4f}, Val Loss: {val_loss_chunk:.4f}")
 
             # Accumulate for global epoch average
             epoch_running_loss += running_loss_chunk
@@ -264,7 +264,7 @@ def train_model_on_chunks(
 
         # At the end of all files, complete 1 epoch over all data
         epoch_loss = epoch_running_loss / epoch_size if epoch_size > 0 else 0.0
-        print(f"=== End of epoch {epoch+1}/{n_epochs} | Avg Training Loss: {epoch_loss:.4f} ===")
+        log.info(f"=== End of epoch {epoch+1}/{n_epochs} | Avg Training Loss: {epoch_loss:.4f} ===")
 
     return model
 
@@ -346,7 +346,7 @@ def fine_tune_model_on_chunks(
     # 2. Fine‑tuning loop over epochs and chunks
     # ------------------------------------------------------------------
     for epoch in range(n_epochs):
-        print(f"\n=== Fine‑tuning Epoch {epoch+1}/{n_epochs} ===")
+        log.info(f"\n=== Fine‑tuning Epoch {epoch+1}/{n_epochs} ===")
         epoch_running_loss, epoch_size = 0.0, 0
 
         file_list = os.listdir(dataset_dir)
@@ -391,7 +391,7 @@ def fine_tune_model_on_chunks(
                     val_samples += v_inputs.size(0)
 
             val_loss_chunk = val_loss_chunk / val_samples if val_samples else 0.0
-            print(f" - {filename} | Train Loss: {chunk_loss:.4f} | Val Loss: {val_loss_chunk:.4f}")
+            log.info(f" - {filename} | Train Loss: {chunk_loss:.4f} | Val Loss: {val_loss_chunk:.4f}")
 
             epoch_running_loss += running_loss_chunk
             epoch_size += samples_in_chunk
@@ -401,7 +401,7 @@ def fine_tune_model_on_chunks(
             gc.collect()
 
         epoch_loss = epoch_running_loss / epoch_size if epoch_size else 0.0
-        print(f"=== End of Epoch {epoch+1}/{n_epochs} | Avg Train Loss: {epoch_loss:.4f} ===")
+        log.info(f"=== End of Epoch {epoch+1}/{n_epochs} | Avg Train Loss: {epoch_loss:.4f} ===")
 
     return model
 
