@@ -31,11 +31,10 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import torch
 from rdkit import Chem
 from rdkit.Chem import AllChem, DataStructs
-import torch
 
-# Project helpers (as used in training)
 from src.model_training_functions import (
     NeuralNetworkModel,
     prepare_and_evaluate_pairs,
@@ -116,11 +115,6 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--input-csv", type=Path, required=True, help="CSV with columns l1,l2 containing SMILES pairs")
     ap.add_argument("--output-csv", type=Path, required=True, help="Output CSV with predictions appended")
 
-    # (Optional) overrides for model architecture (defaults loaded from <model>.params.json)
-    ap.add_argument("--hidden-layers", type=str, default=None,
-                    help='Override hidden layers, e.g., "512,256,128,64" or "[512,256]"')
-    ap.add_argument("--dropout", type=float, default=None, help="Override dropout probability")
-
     # Similarity filtering
     ap.add_argument("--tanimoto-threshold", type=float, default=0.40,
                     help="Filter out pairs with Tanimoto >= threshold (default: 0.40)")
@@ -143,7 +137,6 @@ def main() -> int:
     for col in ("l1", "l2"):
         if col not in df.columns:
             raise SystemExit(f"Input CSV must contain column '{col}'")
-    df = df[["l1", "l2"]].copy()
 
     # 2) Optional Tanimoto filtering (recommended to mirror training)
     if not args.no_tanimoto_filter:
@@ -169,8 +162,8 @@ def main() -> int:
 
     # 3) Load model params from JSON next to the .pth, then apply CLI overrides
     base_params = load_model_params_from_json(args.model_path)  # loads hidden_layers + dropout
-    hidden_layers = parse_hidden_layers(args.hidden_layers) if args.hidden_layers else base_params["hidden_layers"]
-    dropout = args.dropout if args.dropout is not None else float(base_params["dropout"])
+    hidden_layers = base_params["hidden_layers"]
+    dropout = float(base_params["dropout"])
 
     log.info("Model params → hidden_layers=%s | dropout=%.3f", hidden_layers, dropout)
 
