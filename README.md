@@ -40,6 +40,8 @@ while filtering by Tanimoto to avoid trivial similarity.
 ├── train_BSI_model.py          # Streamed pair generation + chunked CSVs + model training
 ├── evaluate_bsi_pairs.py       # Evaluate new compound pairs (from SMILES) with a trained model (.pth + .params.json)
 ├── fine-tune_model.py          # Fine-tune pre-trained model on new data
+├── environment_cpu.yml         # Environment with dependencies to run with CPU
+├── environment_gpu.yml         # Environment with dependencies to run with GPU
 notebooks/
 │   ├── 1_data_obtaining.ipynb      # Notebook version for interactive step-by-step data extraction from chembl
 │   ├── 2_dataset_assembly.ipynb    # Notebook version of interactive step-by-step dataset active and inactive pairs assembly
