@@ -251,7 +251,6 @@ python evaluate_bsi_pairs.py \
   --input-csv data/pairs_to_score.csv \
   --output-csv out/predictions.csv \
   --tanimoto-threshold 0.40 \
-  --fp-bits 256
 ```
 
 What it does:
@@ -292,7 +291,7 @@ python train_BSI_model.py \
   --train-dir out/train_data \
   --model-out out/models/bsi_large.pth \
   --hidden-layers "512,256,128,64" \
-  --model-type BSI_Large_MPG \
+  --model-type BSI_Large_MPG
 ```
 
 #### Step 3: Fine-tune the model
@@ -304,7 +303,7 @@ python fine-tune_model.py \
   --model_out out/models/bsi_large_finetuned.pth \
   --train_dir out/train_data_ft \
   --freeze_until_layer 1 \
-  --n_epochs 5 --fp-bits 256 
+  --n_epochs 5
 ```
 
 #### Step 4: Predictions on example data
@@ -316,8 +315,7 @@ python evaluate_bsi_pairs.py \
   --model-path out/models/bsi_large.pth \
   --input-csv example_inputs/test_data.csv \
   --output-csv out/test_data_preds.csv \
-  --tanimoto-threshold 0.40 \
-  --fp-bits 256
+  --tanimoto-threshold 0.40
 ```
 
 Predict using fine-tuned BSI-Large model
@@ -327,8 +325,7 @@ python evaluate_bsi_pairs.py \
   --model-path out/models/bsi_large_finetuned.pth \
   --input-csv data/pairs_to_score.csv \
   --output-csv out/test_data_preds_ft.csv \
-  --tanimoto-threshold 0.40 \
-  --fp-bits 256
+  --tanimoto-threshold 0.40
 ```
 
 ---
