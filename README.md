@@ -62,11 +62,18 @@ example_inputs
 # 1. Clone
 git clone git@github.com:gschottlender/bioactivity-similarity-index.git && cd bioactivity-similarity-index
 
-# 2. Create environment (exact versions from paper)
-conda env create -f environment.yml
+# 2. Create ONE of the follwing environments:
+
+# GPU (recommended) — requires NVIDIA driver ~550+ (CUDA 12.4 compatible)
+conda env create -f environment_gpu.yml
+
+# CPU-only — works everywhere
+conda env create -f environment_cpu.yml
+
+# 3. Activate environment
 conda activate bsi_env
 
-# 3. Register Jupyter kernel (once)
+# 4. Register Jupyter kernel (once)
 python -m ipykernel install --user --name bsi_env --display-name "Python (bsi_env)"
 ```
 
