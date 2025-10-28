@@ -19,7 +19,7 @@ This repo includes three command-line scripts and companion notebooks that mirro
 - [Data & Outputs](#data--outputs)
 - [Description and Usage](#Description-and-Usage)
 - [Configuration & Hyperparameters](#configuration--hyperparameters)
-- [End-to-end example](#End-to-end-Workflow-Example)
+- [End-to-end Workflow Example](#End-to-end-Workflow-Example)
 - [Notebooks](#notebooks)
 - [Dependencies](#dependencies)
 
@@ -335,14 +335,14 @@ python evaluate_bsi_pairs.py \
 ## Notebooks
 - **1_data_obtaining.ipynb** – mirrors `process_chembl_db.py` steps: SQL extraction, labeling, and artifact generation.
 - **2_dataset_assembly.ipynb** – demonstrates ligand pruning, pair generation, and chunking.
-- **3_train_models.ipynb** – focuses on training from chunks, monitoring loss/metrics, and saving the model.
+- **3_train_models.ipynb** – focuses on training from chunks, monitoring loss/metrics, fine-tuning, and saving the model and evaluating on test data.
 
-> The scripts are the source of truth for automation; the notebooks are great for exploration, workflow modifications and sanity checks.
+> The scripts are the source for automation; the notebooks are great for exploration, workflow modifications and sanity checks.
 
 ---
 
 ## Dependencies
-- Python ≥ 3.10
+- Python ≥ 3.9
 - RDKit
 - NumPy, pandas
 - scikit-learn
