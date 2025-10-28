@@ -392,6 +392,7 @@ def main() -> int:
 
     # 1) Load artifacts
     table, fps_np, fps_bv, scaffolds, decoys = load_artifacts(args.data_dir)
+    fp_bits = int(next(iter(fps_np.values())).shape[0])
 
     # 2) Select proteins
     if args.model_type == "BSI_Large":
@@ -480,7 +481,8 @@ def main() -> int:
     model_params = {
         "hidden_layers": parse_hidden_layers(args.hidden_layers),
         "dropout": args.dropout,
-        "random_seed": args.random_seed
+        "random_seed": args.random_seed,
+        "fp_bits": fp_bits
     }
 
     # Same directory and basename as the model .pth file
