@@ -298,12 +298,12 @@ python train_BSI_model.py \
 
 ```bash
 python fine-tune_model.py \
-  --input_csv /example_inputs/fine_tuning_data.csv \
+  --input_csv example_inputs/fine_tuning_data.csv \
   --model_path out/models/bsi_large.pth \
   --model_out out/models/bsi_large_finetuned.pth \
   --train_dir out/train_data_ft \
   --freeze_until_layer 1 \
-  --n_epochs 5
+  --n_epochs 25
 ```
 
 #### Step 4: Predictions on example data
@@ -323,7 +323,7 @@ Predict using fine-tuned BSI-Large model
 ```bash
 python evaluate_bsi_pairs.py \
   --model-path out/models/bsi_large_finetuned.pth \
-  --input-csv data/pairs_to_score.csv \
+  --input-csv example_inputs/test_data.csv \
   --output-csv out/test_data_preds_ft.csv \
   --tanimoto-threshold 0.40
 ```
