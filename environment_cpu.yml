@@ -1,0 +1,44 @@
+name: bsi_env
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+  - schrodinger
+dependencies:
+  - python=3.9
+  - pip
+
+  - numpy=1.24.4
+  - pandas=1.5.3
+  - scipy=1.13.1
+  - scikit-learn=1.4.1.post1
+  - joblib
+  - sqlalchemy
+
+  - matplotlib-base=3.9.*
+  - ipykernel
+  - jinja2
+  - pillow
+  - reportlab
+  - tqdm
+  - fsspec
+
+  - rdkit=2021.09.1
+
+  - pytorch=2.5.1
+  - torchvision=0.20.1
+  - torchaudio=2.5.1
+  - cpuonly
+
+  - certifi
+  - ca-certificates
+  - ipython
+  - jupyter_client
+  - jupyter_core
+  - psutil
+  - python-dateutil
+  - pytz
+  - typing_extensions
+  - setuptools
+  - wheel
+  - pip
