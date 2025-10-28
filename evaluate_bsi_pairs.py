@@ -142,7 +142,7 @@ def main() -> int:
         tanims: list[float | None] = []
         keep_mask = []
         for smi1, smi2 in df.itertuples(index=False, name=None):
-            t = tanimoto_smiles(smi1, smi2, args.fp_bits)
+            t = tanimoto_smiles(smi1, smi2, fp_bits)
             tanims.append(t)
             keep_mask.append((t is not None) and (t < args.tanimoto_threshold))
         df["Tanimoto"] = tanims
