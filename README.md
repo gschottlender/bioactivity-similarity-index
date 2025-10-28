@@ -151,6 +151,7 @@ python process_chembl_db.py \
   --out-dir out/db_data
 ```
 What it does:
+- Optionally downloads the ChEMBL database if --download_chembl is provided instead of --chembl-sqlite <chembl_db_path>.
 - Single SQL joins fetch **ligand_id**, **UniProt**, **pChEMBL**, **PFAM**, **SMILES**.
 - pChEMBL is clamped to **[3,10]**; explicit textual “inactive/no binding” with missing pChEMBL are set to **3**.
 - Activity labels: `activity = 1` if pChEMBL > **6.5**, `0` if pChEMBL < **4.5**; mid-zone rows are dropped.
@@ -216,16 +217,16 @@ python fine-tune_model.py \
   --freeze_until_layer 1 \
   --n_epochs 5 --dropout_prob 0.50 \
   --lr 1e-5 --batch_size 32 \
-  --fp-bits 256 --random_seed 42
+  --random_seed 42
 ```
 
 What it does:
 - **Loads labeled ligand–ligand pairs** from `--input_csv` and validates required columns `l1`, `l2`, `y`.
-- **Computes ECFP4 fingerprints (256‑bit)** for every unique SMILES appearing in `l1` or `l2` (cached and reused across chunks).
+- **Computes ECFP4 fingerprints** for every unique SMILES appearing in `l1` or `l2` (cached and reused across chunks).
 - **Shuffles and splits the pairs into chunked CSVs** under `--train_dir` (bounded‑memory training), with files prefixed by `--chunk_prefix`.
 - **Loads base model hyperparameters** (hidden layers & dropout) from `--model_path` and **reconstructs the network** accordingly; then **loads pre‑trained weights**.
 - **Fine‑tunes the model** on the chunked data, with options to freeze initial layers (`--freeze_until_layer`), set epochs, dropout during training, learning rate, and batch size.
-- **Saves the fine‑tuned weights to `--model_out`** and writes a small JSON next to it (`.params.json`) capturing essential training parameters (hidden layers, dropout, seed).
+- **Saves the fine‑tuned weights to `--model_out`** and writes a small JSON next to it (`.params.json`) capturing essential training parameters (hidden layers, dropout, seed, fp_size).
 
 Notes:
 - Fingerprints are computed once per unique SMILES to avoid recomputation across chunks.
