@@ -19,7 +19,6 @@ def parse_args():
     parser.add_argument("--train_dir", type=str, required=True, help='Directory to save training provisional chunked data')
     parser.add_argument("--chunk_prefix", type=str, default="chunk")
     parser.add_argument("--num_chunks", type=int, default=5, help="Number of chunks to divide dataset after converting to features vector (default: 5)")
-    ap.add_argument("--fp-bits", type=int, default=256, help="ECFP4 bit-length for compound encoding (default: 256)")
     parser.add_argument("--random_seed", type=int, default=42)
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--freeze_until_layer", type=int, default=1,
@@ -46,14 +45,22 @@ def main() -> int:
     args = parse_args()
     setup_logging(args.verbose)
 
-    # 1) Load input pairs
+    # 1) Load model parameters
+    base_params = load_model_params_from_json(args.model_path)
+    hidden_layers = base_params["hidden_layers"]
+    dropout = float(base_params["dropout"])
+    fp_bits = int(base_params["fp_bits"])
+
+    log.info(f"Model params → hidden_layers={hidden_layers} | dropout={dropout} | fp_bits={fp_bits}")
+
+    # 2) Load input pairs
     pairs = pd.read_csv(args.input_csv)
     for col in ("l1", "l2", "y"):
         if col not in pairs.columns:
             raise SystemExit(f"Input CSV must contain column '{col}'")
 
     tot_ligs = pd.unique(pairs[['l1', 'l2']].values.ravel())
-    db_ligs = {s: ecfp4_from_smiles(s,n_bits=args.fp_bits) for s in tot_ligs}
+    db_ligs = {s: ecfp4_from_smiles(s,n_bits=fp_bits) for s in tot_ligs}
 
     desired_chunks = args.num_chunks if args.num_chunks and args.num_chunks > 0 else 30
     num_chunks = min(desired_chunks, len(pairs))
@@ -66,14 +73,8 @@ def main() -> int:
         random_state=args.random_seed,
     )
 
-    # 2) Load model parameters
-    base_params = load_model_params_from_json(args.model_path)
-    hidden_layers = base_params["hidden_layers"]
-    dropout = float(base_params["dropout"])
-    log.info(f"Model params → hidden_layers={hidden_layers} | dropout={dropout:.3f}")
-
     # 3) Load model weights
-    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=args.fp_bits, output_size=1)
+    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=fp_bits, output_size=1)
     state = torch.load(args.model_path, map_location="cpu")
     model.load_state_dict(state)
 
@@ -97,7 +98,8 @@ def main() -> int:
     model_params = {
         "hidden_layers": hidden_layers,
         "dropout": args.dropout_prob,
-        "random_seed": args.random_seed
+        "random_seed": args.random_seed,
+        "fp_bits": fp_bits
     }
 
     params_path = Path(args.model_out).with_suffix(".params.json")
