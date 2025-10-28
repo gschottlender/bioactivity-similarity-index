@@ -19,7 +19,7 @@ This repo includes three command-line scripts and companion notebooks that mirro
 - [Data & Outputs](#data--outputs)
 - [Description and Usage](#Description-and-Usage)
 - [Configuration & Hyperparameters](#configuration--hyperparameters)
-- [End-to-end Workflow Example](#End-to-end-Workflow-Example)
+- [End-to-end Workflow Example](#end-to-end-workflow-example)
 - [Notebooks](#notebooks)
 - [Dependencies](#dependencies)
 
