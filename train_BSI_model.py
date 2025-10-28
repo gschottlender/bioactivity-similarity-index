@@ -290,7 +290,7 @@ def load_table(data_dir: Path) -> pd.DataFrame:
     p = data_dir / "prot_ligs_db.csv"
     if not p.exists():
         raise FileNotFoundError(f"Missing table: {p}")
-    df = pd.read_csv(p)
+    df = pd.read_csv(p, low_memory=False)
     # sanity
     need = {"lig", "prot", "activity"}
     if not need.issubset(df.columns):
