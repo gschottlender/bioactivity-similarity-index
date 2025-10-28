@@ -1,10 +1,11 @@
-# BSI: Binding Similarity Inference – From ChEMBL to Trained Models
+# BSI: Bioactivity Similarity Index – From ChEMBL to Trained Models
 
 A reproducible pipeline to:
 1) extract & label ligand–protein activity data from a local ChEMBL SQLite dump,  
 2) derive cheminformatics artifacts (SMILES, physchem props, ECFP4, Bemis–Murcko scaffolds, decoys),  
-3) assemble pairwise training sets (S/N pairs with Tanimoto filtering), train a neural model, and  
-4) **evaluate** new compound pairs with the trained model.
+3) assemble pairwise training sets (S/N pairs with Tanimoto filtering), train a neural model,
+4) fine-tune pre-trained models  
+5) **evaluate** new compound pairs with the trained or fine-tuned models.
 
 This repo includes three command-line scripts and companion notebooks that mirror the workflow end-to-end. Also includes a pre-trained BSI-Large model, available to make predictions and fine-tuning.
 
