@@ -90,16 +90,6 @@ def load_model_params_from_json(model_path: Path) -> dict:
     with open(params_path) as f:
         params = json.load(f)
 
-    if "hidden_layers" not in params or "dropout" not in params:
-        raise SystemExit(
-            f"Params JSON must contain 'hidden_layers' and 'dropout'. Got: {list(params.keys())} "
-            f"at {params_path}"
-        )
-    if not isinstance(params["hidden_layers"], list) or not all(isinstance(x, int) for x in params["hidden_layers"]):
-        raise SystemExit("'hidden_layers' must be a list of ints in params JSON.")
-    if not isinstance(params["dropout"], (int, float)):
-        raise SystemExit("'dropout' must be numeric in params JSON.")
-
     return params
 
 # ========================= CLI =========================
@@ -120,7 +110,6 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--tanimoto-threshold", type=float, default=0.40,
                     help="Filter out pairs with Tanimoto >= threshold (default: 0.40)")
     ap.add_argument("--no-tanimoto-filter", action="store_true", help="Do not filter pairs by Tanimoto")
-    ap.add_argument("--fp-bits", type=int, default=256, help="ECFP4 bit-length used for compound encoding (default: 256)")
 
     # Logging
     ap.add_argument("-v", "--verbose", action="count", default=1, help="Verbosity (-v, -vv)")
@@ -138,8 +127,16 @@ def main() -> int:
     for col in ("l1", "l2"):
         if col not in df.columns:
             raise SystemExit(f"Input CSV must contain column '{col}'")
+    
+    # 2) Load model params from JSON next to the .pth, then apply CLI overrides
+    base_params = load_model_params_from_json(args.model_path)  # loads hidden_layers + dropout
+    hidden_layers = base_params["hidden_layers"]
+    dropout = float(base_params["dropout"])
+    fp_bits = int(base_params["fp_bits"])
 
-    # 2) Optional Tanimoto filtering (recommended to mirror training)
+    log.info(f"Model params → hidden_layers={hidden_layers} | dropout={dropout} | fp_bits={fp_bits}")
+
+    # 3) Optional Tanimoto filtering (recommended to mirror training)
     if not args.no_tanimoto_filter:
         log.info("Computing Tanimoto to filter pairs with similarity >= %.2f", args.tanimoto_threshold)
         tanims: list[float | None] = []
@@ -161,21 +158,15 @@ def main() -> int:
         out.to_csv(args.output_csv, index=False)
         return 0
 
-    # 3) Load model params from JSON next to the .pth, then apply CLI overrides
-    base_params = load_model_params_from_json(args.model_path)  # loads hidden_layers + dropout
-    hidden_layers = base_params["hidden_layers"]
-    dropout = float(base_params["dropout"])
-
-    log.info("Model params → hidden_layers=%s | dropout=%.3f", hidden_layers, dropout)
 
     # 4) Construct model and load weights
-    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=args.fp_bits, output_size=1)
+    model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=fp_bits, output_size=1)
     state = torch.load(args.model_path, map_location="cpu")
     model.load_state_dict(state)
     model.eval()
 
     # 5) Score pairs via project helper (ensures same preprocessing as training)
-    scored = prepare_and_evaluate_pairs(df[["l1", "l2"]].copy(), model, fp_size=args.fp_bits)
+    scored = prepare_and_evaluate_pairs(df[["l1", "l2"]].copy(), model, fp_size=fp_bits)
 
     # 6) Save predictions
     if {"l1", "l2"}.issubset(scored.columns):
