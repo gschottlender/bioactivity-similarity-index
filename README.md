@@ -307,6 +307,7 @@ python fine-tune_model.py \
   --model_out out/models/bsi_large_finetuned.pth \
   --train_dir out/train_data_ft \
   --freeze_until_layer 1 \
+  --num_chunks 1 \
   --n_epochs 25
 ```
 
