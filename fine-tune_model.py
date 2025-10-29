@@ -75,7 +75,7 @@ def main() -> int:
 
     # 3) Load model weights
     model = NeuralNetworkModel(hidden_layers=hidden_layers, dropout_prob=dropout, input_size=fp_bits, output_size=1)
-    state = torch.load(args.model_path, map_location="cpu")
+    state = torch.load(args.model_path, map_location="cpu", weights_only=True)
     model.load_state_dict(state)
 
     # 4) Fine-tune model
